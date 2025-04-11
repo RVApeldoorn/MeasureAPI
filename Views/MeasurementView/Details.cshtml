@@ -1,0 +1,14 @@
+@model MeasurementApi.Models.Measurement
+
+<h1>Measurement Details</h1>
+
+<ul>
+    <li><strong>ID:</strong> @Model.Id</li>
+    <li><strong>Patient ID:</strong> @Model.PatientId</li>
+    <li><strong>Height:</strong> @Model.Height @Model.HeightUnit</li>
+    <li><strong>Weight:</strong> @Model.Weight @Model.WeightUnit</li>
+    <li><strong>Created:</strong> @Model.CreatedAt</li>
+    <li><strong>Created:</strong> @Model.UpdatedAt</li>
+</ul>
+
+<a href="/measurements">← Back to list</a>

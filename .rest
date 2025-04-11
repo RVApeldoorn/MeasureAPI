@@ -1,0 +1,33 @@
+###
+POST http://localhost:5005/api/measurement
+Content-Type: application/json
+
+{
+  "patientId": "child-123",
+  "height": 120.5,
+  "weight": 456,
+  "measuredAt": "2025-04-09T10:00:00Z"
+}
+
+###
+GET http://localhost:5005/api/measurement
+
+###
+GET http://localhost:5005/api/measurement/child/child-123
+
+###
+GET http://localhost:5005/api/measurement/3
+
+###
+PUT http://localhost:5005/api/measurement/1
+Content-Type: application/json
+
+{
+  "patientId": "child-123",
+  "height": 120.5,
+  "weight": 45.6,
+  "measuredAt": "2025-04-10T11:00:00Z"
+}
+
+###
+DELETE http://localhost:5005/api/measurement/2
