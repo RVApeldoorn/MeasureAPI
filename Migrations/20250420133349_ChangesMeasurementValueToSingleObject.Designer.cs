@@ -3,6 +3,7 @@ using System;
 using MeasurementApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MeasureAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250420133349_ChangesMeasurementValueToSingleObject")]
+    partial class ChangesMeasurementValueToSingleObject
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
@@ -114,7 +117,8 @@ namespace MeasureAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MeasurementRequestId");
+                    b.HasIndex("MeasurementRequestId")
+                        .IsUnique();
 
                     b.HasIndex("UserId");
 
@@ -200,8 +204,8 @@ namespace MeasureAPI.Migrations
             modelBuilder.Entity("MeasurementApi.Models.MeasurementValue", b =>
                 {
                     b.HasOne("MeasurementApi.Models.MeasurementRequest", "MeasurementRequest")
-                        .WithMany("MeasurementValues")
-                        .HasForeignKey("MeasurementRequestId")
+                        .WithOne("MeasurementValue")
+                        .HasForeignKey("MeasurementApi.Models.MeasurementValue", "MeasurementRequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -214,7 +218,8 @@ namespace MeasureAPI.Migrations
 
             modelBuilder.Entity("MeasurementApi.Models.MeasurementRequest", b =>
                 {
-                    b.Navigation("MeasurementValues");
+                    b.Navigation("MeasurementValue")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MeasurementApi.Models.MeasurementSession", b =>

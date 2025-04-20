@@ -1,33 +1,55 @@
-###
-POST http://localhost:5005/api/measurement
+# Get all patients
+GET http://localhost:5005/api/user/allpatients
 Content-Type: application/json
 
+###
+
+# Create a new measurement session
+POST http://localhost:5005/api/user/createmeasurementsession
+Content-Type: application/json
+BearerToken: Create4Care_123
+
 {
-  "patientId": "child-123",
-  "height": 120.5,
-  "weight": 456,
-  "measuredAt": "2025-04-09T10:00:00Z"
+  "CreatedByUserId": 1,
+  "PatientId": 1,
+  "dueDate": "2025-06-01",
+  "requests": [
+    {
+      "measurementTypeId": 1
+    },
+    {
+      "measurementTypeId": 2
+    }
+  ]
 }
 
 ###
-GET http://localhost:5005/api/measurement
 
-###
-GET http://localhost:5005/api/measurement/child/child-123
-
-###
-GET http://localhost:5005/api/measurement/3
-
-###
-PUT http://localhost:5005/api/measurement/1
+# Fetch measurement sessions for a patient
+GET http://localhost:5005/api/patient/1/sessions
 Content-Type: application/json
 
+###
+
+# Submit measurements
+POST http://localhost:5005/api/patient/1/submit
+Content-Type: application/json
+BearerToken: Create4Care_123
+
 {
-  "patientId": "child-123",
-  "height": 120.5,
-  "weight": 45.6,
-  "measuredAt": "2025-04-10T11:00:00Z"
+  "sessionId": 1,
+  "values": [
+    {
+      "measurementRequestId": 1,
+      "value": "123",
+      "note": "Bla bla bla"
+    },
+    {
+      "measurementRequestId": 2,
+      "value": "45",
+      "note": "Bla bla bla"
+    }
+  ]
 }
 
 ###
-DELETE http://localhost:5005/api/measurement/2

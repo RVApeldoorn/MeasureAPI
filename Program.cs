@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MeasurementApi.Services;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
+using MeasurementApi.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=measurements.db"));
 
 builder.Services.AddTransient<IMeasurementService, MeasurementService>();
+builder.Services.AddTransient<IPatientService, PatientService>();
 
 builder.Services.Configure<BearerTokenOptions>(builder.Configuration.GetSection("BearerTokenOptions"));
 
@@ -23,6 +25,7 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
+    await DbSeeder.SeedAsync(db);
 }
 
 app.MapControllers();

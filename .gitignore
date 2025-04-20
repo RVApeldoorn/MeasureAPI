@@ -18,3 +18,8 @@ Thumbs.db
 
 appsettings.Development.json
 appsettings.Production.json
+appsettings.json
+
+measurements.db
+measurements.db-shm
+measurements.db-wal
