@@ -3,6 +3,7 @@ using System;
 using MeasurementApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MeasureAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250416145710_AddMeasurementTables")]
+    partial class AddMeasurementTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
@@ -23,49 +26,30 @@ namespace MeasureAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("MeasurementSessionId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("MeasurementTypeId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MeasurementSessionId");
-
-                    b.HasIndex("MeasurementTypeId");
-
-                    b.ToTable("MeasurementRequests");
-                });
-
-            modelBuilder.Entity("MeasurementApi.Models.MeasurementSession", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("CreatedByUserId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("MeasurementTypeId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("PatientId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RequestedByUserId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedByUserId");
+                    b.HasIndex("MeasurementTypeId");
 
                     b.HasIndex("PatientId");
 
-                    b.ToTable("MeasurementSessions");
+                    b.HasIndex("RequestedByUserId");
+
+                    b.ToTable("MeasurementRequests");
                 });
 
             modelBuilder.Entity("MeasurementApi.Models.MeasurementType", b =>
@@ -96,8 +80,11 @@ namespace MeasureAPI.Migrations
                     b.Property<int>("MeasurementRequestId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Note")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("MeasurementTypeId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PatientId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Source")
                         .IsRequired()
@@ -106,9 +93,6 @@ namespace MeasureAPI.Migrations
                     b.Property<DateTime>("TakenAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<decimal>("Value")
                         .HasColumnType("TEXT");
 
@@ -116,7 +100,9 @@ namespace MeasureAPI.Migrations
 
                     b.HasIndex("MeasurementRequestId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("MeasurementTypeId");
+
+                    b.HasIndex("PatientId");
 
                     b.ToTable("MeasurementValues");
                 });
@@ -161,40 +147,29 @@ namespace MeasureAPI.Migrations
 
             modelBuilder.Entity("MeasurementApi.Models.MeasurementRequest", b =>
                 {
-                    b.HasOne("MeasurementApi.Models.MeasurementSession", "MeasurementSession")
-                        .WithMany("MeasurementRequests")
-                        .HasForeignKey("MeasurementSessionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("MeasurementApi.Models.MeasurementType", "MeasurementType")
                         .WithMany()
                         .HasForeignKey("MeasurementTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("MeasurementSession");
-
-                    b.Navigation("MeasurementType");
-                });
-
-            modelBuilder.Entity("MeasurementApi.Models.MeasurementSession", b =>
-                {
-                    b.HasOne("MeasurementApi.Models.User", "CreatedByUser")
-                        .WithMany("CreatedMeasurementSessions")
-                        .HasForeignKey("CreatedByUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("MeasurementApi.Models.Patient", "Patient")
-                        .WithMany("MeasurementSessions")
+                        .WithMany("MeasurementRequests")
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("CreatedByUser");
+                    b.HasOne("MeasurementApi.Models.User", "RequestedByUser")
+                        .WithMany("MeasurementRequests")
+                        .HasForeignKey("RequestedByUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MeasurementType");
 
                     b.Navigation("Patient");
+
+                    b.Navigation("RequestedByUser");
                 });
 
             modelBuilder.Entity("MeasurementApi.Models.MeasurementValue", b =>
@@ -205,11 +180,23 @@ namespace MeasureAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MeasurementApi.Models.User", null)
-                        .WithMany("SubmittedMeasurementValues")
-                        .HasForeignKey("UserId");
+                    b.HasOne("MeasurementApi.Models.MeasurementType", "MeasurementType")
+                        .WithMany()
+                        .HasForeignKey("MeasurementTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MeasurementApi.Models.Patient", "Patient")
+                        .WithMany("MeasurementValues")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("MeasurementRequest");
+
+                    b.Navigation("MeasurementType");
+
+                    b.Navigation("Patient");
                 });
 
             modelBuilder.Entity("MeasurementApi.Models.MeasurementRequest", b =>
@@ -217,21 +204,16 @@ namespace MeasureAPI.Migrations
                     b.Navigation("MeasurementValues");
                 });
 
-            modelBuilder.Entity("MeasurementApi.Models.MeasurementSession", b =>
-                {
-                    b.Navigation("MeasurementRequests");
-                });
-
             modelBuilder.Entity("MeasurementApi.Models.Patient", b =>
                 {
-                    b.Navigation("MeasurementSessions");
+                    b.Navigation("MeasurementRequests");
+
+                    b.Navigation("MeasurementValues");
                 });
 
             modelBuilder.Entity("MeasurementApi.Models.User", b =>
                 {
-                    b.Navigation("CreatedMeasurementSessions");
-
-                    b.Navigation("SubmittedMeasurementValues");
+                    b.Navigation("MeasurementRequests");
                 });
 #pragma warning restore 612, 618
         }
