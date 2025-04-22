@@ -31,7 +31,7 @@ public class PatientController : ControllerBase
     [HttpPost("{patientId}/submit")]
     public async Task<IActionResult> SubmitMeasurements([FromRoute] int patientId, [FromBody] MeasurementSubmissionDto dto)
     {
-        if (dto.Values == null || !dto.Values.Any())
+        if (dto == null || dto.Values == null || !dto.Values.Any())
         {
             return BadRequest(new { message = "No measurement values provided." });
         }
