@@ -34,8 +34,8 @@ namespace MeasurementApi.Data
             if(!context.Auths.Any())
             {
                 context.Auths.AddRange(
-                    new Auth {Id = 1, PatientId = 1, AuthKey = "123456" },
-                    new Auth {Id = 2, PatientId = 2, AuthKey = "abcdef" }
+                    new Auth {Id = 1, PatientId = 1, AuthKey = "12345" },
+                    new Auth {Id = 2, PatientId = 2, AuthKey = "98765" }
                 );
             }
 
