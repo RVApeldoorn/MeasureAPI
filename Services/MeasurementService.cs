@@ -24,16 +24,11 @@ public class MeasurementService : IMeasurementService
             DueDate = dto.DueDate,
         };
 
-        foreach (var requestDto in dto.Requests)
+        session.MeasurementRequests = dto.Requests.Select(requestDto => new MeasurementRequest
         {
-            var request = new MeasurementRequest
-            {
-                MeasurementSessionId = session.Id,
-                MeasurementTypeId = requestDto.MeasurementTypeId
-            };
-
-            session.MeasurementRequests.Add(request);
-        }
+            MeasurementSessionId = session.Id,
+            MeasurementTypeId = requestDto.MeasurementTypeId
+        }).ToList();
 
         _db.MeasurementSessions.Add(session);
         await _db.SaveChangesAsync();

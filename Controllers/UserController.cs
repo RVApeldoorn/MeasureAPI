@@ -29,7 +29,7 @@ namespace MeasurementApi.Controllers
             return Ok(patients);
         }
 
-        [BearerTokenFilter]
+        // [BearerTokenFilter]
         [HttpPost("createmeasurementsession")]
         public async Task<IActionResult> CreateMeasurementSession([FromBody] CreateMeasurementSessionDto dto)
         {
