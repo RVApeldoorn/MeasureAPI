@@ -5,16 +5,31 @@ using Microsoft.AspNetCore.Mvc;
 using MeasurementApi.Controllers;
 using MeasurementApi.DTOs;
 using MeasurementApi.Services.Interfaces;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 public class PatientControllerTests
 {
     private readonly Mock<IMeasurementService> _serviceMock;
     private readonly PatientController _controller;
 
+    private const string Patient1Id = "patient_1";
+    private const string Patient2Id = "patient_2";
+
     public PatientControllerTests()
     {
         _serviceMock = new Mock<IMeasurementService>();
         _controller = new PatientController(_serviceMock.Object);
+
+        var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+        {
+            new Claim("patient_id", Patient1Id)
+        }, "mock"));
+
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = user }
+        };
     }
 
     [Fact]
@@ -30,9 +45,9 @@ public class PatientControllerTests
             }
         };
 
-        _serviceMock.Setup(s => s.SubmitMeasurement(1, dto)).Returns(Task.CompletedTask);
+        _serviceMock.Setup(s => s.SubmitMeasurement(Patient1Id, dto)).Returns(Task.CompletedTask);
 
-        var result = await _controller.SubmitMeasurements(1, dto);
+        var result = await _controller.SubmitMeasurements(dto);
 
         result.Should().BeOfType<OkObjectResult>();
     }
@@ -46,7 +61,7 @@ public class PatientControllerTests
             Values = new List<MeasurementValueDto>()
         };
 
-        var result = await _controller.SubmitMeasurements(1, dto);
+        var result = await _controller.SubmitMeasurements(dto);
 
         result.Should().BeOfType<BadRequestObjectResult>();
     }
@@ -60,7 +75,7 @@ public class PatientControllerTests
             Values = null!
         };
 
-        var result = await _controller.SubmitMeasurements(1, dto);
+        var result = await _controller.SubmitMeasurements(dto);
 
         result.Should().BeOfType<BadRequestObjectResult>();
     }
@@ -68,7 +83,7 @@ public class PatientControllerTests
     [Fact]
     public async Task SubmitMeasurements_ReturnsBadRequest_WhenDtoIsNull()
     {
-        var result = await _controller.SubmitMeasurements(1, null!);
+        var result = await _controller.SubmitMeasurements(null!);
 
         result.Should().BeOfType<BadRequestObjectResult>();
     }
@@ -86,32 +101,12 @@ public class PatientControllerTests
             }
         };
 
-        _serviceMock.Setup(s => s.SubmitMeasurement(1, dto))
+        _serviceMock.Setup(s => s.SubmitMeasurement(Patient1Id, dto))
                     .ThrowsAsync(new Exception("Database error"));
 
-        var result = await _controller.SubmitMeasurements(1, dto);
+        var result = await _controller.SubmitMeasurements(dto);
 
         result.Should().BeOfType<BadRequestObjectResult>();
-    }
-
-    [Fact]
-    public async Task SubmitMeasurements_AllowsNegativePatientId_ByDefault()
-    {
-        var dto = new MeasurementSubmissionDto
-        {
-            sessionId = -5,
-            Values = new List<MeasurementValueDto>
-            {
-                new MeasurementValueDto { Value = 1 },
-                new MeasurementValueDto { Value = 2 }
-            }
-        };
-
-        _serviceMock.Setup(s => s.SubmitMeasurement(-5, dto)).Returns(Task.CompletedTask);
-
-        var result = await _controller.SubmitMeasurements(-5, dto);
-
-        result.Should().BeOfType<OkObjectResult>();
     }
 
     [Fact]
@@ -127,9 +122,9 @@ public class PatientControllerTests
             }
         };
 
-        _serviceMock.Setup(s => s.SubmitMeasurement(1, dto)).Returns(Task.CompletedTask);
+        _serviceMock.Setup(s => s.SubmitMeasurement(Patient1Id, dto)).Returns(Task.CompletedTask);
 
-        var result = await _controller.SubmitMeasurements(1, dto);
+        var result = await _controller.SubmitMeasurements(dto);
 
         result.Should().BeOfType<OkObjectResult>();
     }
@@ -139,6 +134,7 @@ public class PatientControllerTests
     {
         var dto = new MeasurementSubmissionDto
         {
+            sessionId = 1,
             Values = new List<MeasurementValueDto>
             {
                 new MeasurementValueDto { Value = double.MaxValue },
@@ -146,9 +142,9 @@ public class PatientControllerTests
             }
         };
 
-        _serviceMock.Setup(s => s.SubmitMeasurement(1, dto)).Returns(Task.CompletedTask);
+        _serviceMock.Setup(s => s.SubmitMeasurement(Patient1Id, dto)).Returns(Task.CompletedTask);
 
-        var result = await _controller.SubmitMeasurements(1, dto);
+        var result = await _controller.SubmitMeasurements(dto);
 
         result.Should().BeOfType<OkObjectResult>();
     }
@@ -158,6 +154,7 @@ public class PatientControllerTests
     {
         var dto = new MeasurementSubmissionDto
         {
+            sessionId = 1,
             Values = new List<MeasurementValueDto>
             {
                 new MeasurementValueDto { Value = -1 },
@@ -165,9 +162,9 @@ public class PatientControllerTests
             }
         };
 
-        _serviceMock.Setup(s => s.SubmitMeasurement(1, dto)).Returns(Task.CompletedTask);
+        _serviceMock.Setup(s => s.SubmitMeasurement(Patient1Id, dto)).Returns(Task.CompletedTask);
 
-        var result = await _controller.SubmitMeasurements(1, dto);
+        var result = await _controller.SubmitMeasurements(dto);
 
         result.Should().BeOfType<OkObjectResult>();
     }

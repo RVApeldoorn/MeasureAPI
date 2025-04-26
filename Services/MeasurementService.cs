@@ -36,7 +36,7 @@ public class MeasurementService : IMeasurementService
         return session.Id;
     }
 
-    public async Task<IEnumerable<MeasurementSessionOverviewDto>> GetSessionsByPatient(int patientId)
+    public async Task<IEnumerable<MeasurementSessionOverviewDto>> GetSessionsByPatient(string patientId)
     {
         return await _db.MeasurementSessions
             .Where(s => s.PatientId == patientId)
@@ -69,7 +69,7 @@ public class MeasurementService : IMeasurementService
             }).ToListAsync();
     }
 
-    public async Task SubmitMeasurement(int PatientId, MeasurementSubmissionDto dto)
+    public async Task SubmitMeasurement(string PatientId, MeasurementSubmissionDto dto)
     {
         foreach (var valueDto in dto.Values)
         {

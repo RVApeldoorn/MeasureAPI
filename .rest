@@ -7,11 +7,10 @@ Content-Type: application/json
 # Create a new measurement session
 POST http://localhost:5005/api/user/createmeasurementsession
 Content-Type: application/json
-BearerToken: Create4Care_123
 
 {
   "CreatedByUserId": 1,
-  "PatientId": 1,
+  "PatientId": "patient_1",
   "dueDate": "2025-06-01",
   "requests": [
     {
@@ -26,15 +25,16 @@ BearerToken: Create4Care_123
 ###
 
 # Fetch measurement sessions for a patient
-GET http://localhost:5005/api/patient/1/sessions
+GET http://localhost:5005/api/patient/sessions
+Authorization: Bearer ...
 Content-Type: application/json
 
 ###
 
 # Submit measurements
-POST http://localhost:5005/api/patient/1/submit
+POST http://localhost:5005/api/patient/submit
+Authorization: Bearer ...
 Content-Type: application/json
-BearerToken: Create4Care_123
 
 {
   "sessionId": 1,
@@ -50,6 +50,16 @@ BearerToken: Create4Care_123
       "note": "Bla bla bla"
     }
   ]
+}
+
+###
+
+# Setup Patient (Get JWT Token)
+POST http://localhost:5005/api/auth/setup
+Content-Type: application/json
+
+{
+  "setupCode": "ABC123"
 }
 
 ###

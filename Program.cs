@@ -1,11 +1,33 @@
 using MeasurementApi.Data;
 using Microsoft.EntityFrameworkCore;
 using MeasurementApi.Services;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using MeasurementApi.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is missing in configuration.");
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+    };
+});
 
 builder.Services.AddControllers();
 builder.Services.AddControllersWithViews();
@@ -17,8 +39,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddTransient<IMeasurementService, MeasurementService>();
 builder.Services.AddTransient<IPatientService, PatientService>();
 
-builder.Services.Configure<BearerTokenOptions>(builder.Configuration.GetSection("BearerTokenOptions"));
-
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -28,30 +48,12 @@ using (var scope = app.Services.CreateScope())
     await DbSeeder.SeedAsync(db);
 }
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
     
 app.Run();
-
-public class BearerTokenFilter : Attribute, IAsyncActionFilter
-{
-    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
-    {
-        var BearerTokenOption = context.HttpContext.RequestServices.GetService<IOptions<BearerTokenOptions>>()!.Value;
-        if (!context.HttpContext.Request.Headers.ContainsKey("BearerToken")){
-            context.HttpContext.Response.StatusCode = 401;
-            return;
-        }
-        if (context.HttpContext.Request.Headers["BearerToken"] != BearerTokenOption.BearerToken){
-            context.HttpContext.Response.StatusCode = 401;
-            return;
-        }
-        await next();
-    }
-}
-
-public class BearerTokenOptions {
-    public string BearerToken  {get; set;} = "";
-}

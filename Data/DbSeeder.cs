@@ -17,8 +17,8 @@ namespace MeasurementApi.Data
             if (!context.Patients.Any())
             {
                 context.Patients.AddRange(
-                    new Patient { Id = 1, Name = "Klaas Jan" },
-                    new Patient { Id = 2, Name = "Corrie de Boer" }
+                    new Patient { Id = "patient_1", Name = "Klaas Jan" },
+                    new Patient { Id = "patient_2", Name = "Corrie de Boer" }
                 );
             }
 
@@ -31,11 +31,11 @@ namespace MeasurementApi.Data
                 );
             }
 
-            if(!context.Auths.Any())
+            if (!context.SetupCodes.Any())
             {
-                context.Auths.AddRange(
-                    new Auth {Id = 1, PatientId = 1, AuthKey = "12345" },
-                    new Auth {Id = 2, PatientId = 2, AuthKey = "98765" }
+                context.SetupCodes.AddRange(
+                    new SetupCode { PatientId = "patient_1", Code = "ABC123", ExpiresAt = DateTime.MaxValue, Used = false },
+                    new SetupCode { PatientId = "patient_2", Code = "XYZ789", ExpiresAt = DateTime.MaxValue, Used = false }
                 );
             }
 
