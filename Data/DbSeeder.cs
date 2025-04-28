@@ -17,8 +17,8 @@ namespace MeasurementApi.Data
             if (!context.Patients.Any())
             {
                 context.Patients.AddRange(
-                    new Patient { Id = 1, Name = "Klaas Jan" },
-                    new Patient { Id = 2, Name = "Corrie de Boer" }
+                    new Patient { Id = "patient_1", Name = "Klaas Jan" },
+                    new Patient { Id = "patient_2", Name = "Corrie de Boer" }
                 );
             }
 
@@ -28,6 +28,14 @@ namespace MeasurementApi.Data
                     new MeasurementType { Id = 1, Name = "Height", Unit = "cm" },
                     new MeasurementType { Id = 2, Name = "Weight", Unit = "kg" },
                     new MeasurementType { Id = 3, Name = "Temperature", Unit = "°C" }
+                );
+            }
+
+            if (!context.SetupCodes.Any())
+            {
+                context.SetupCodes.AddRange(
+                    new SetupCode { PatientId = "patient_1", Code = "ABC123", ExpiresAt = DateTime.MaxValue, Used = false },
+                    new SetupCode { PatientId = "patient_2", Code = "XYZ789", ExpiresAt = DateTime.MaxValue, Used = false }
                 );
             }
 

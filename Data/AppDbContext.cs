@@ -12,6 +12,7 @@ public class AppDbContext : DbContext
     public DbSet<MeasurementValue> MeasurementValues { get; set; }
     public DbSet<MeasurementRequest> MeasurementRequests { get; set; }
     public DbSet<MeasurementSession> MeasurementSessions { get; set; }
+    public DbSet<SetupCode> SetupCodes { get; set; }
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 }

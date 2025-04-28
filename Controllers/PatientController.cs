@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MeasurementApi.DTOs;
 using MeasurementApi.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MeasurementApi.Controllers;
 
@@ -15,25 +16,38 @@ public class PatientController : ControllerBase
         _measurementService = measurementService;
     }
 
-    [HttpGet("{patientId}/sessions")]
-    public async Task<IActionResult> GetSessions(int patientId)
+    [Authorize]
+    [HttpGet("sessions")]
+    public async Task<IActionResult> GetSessions()
     {
-        var sessions = await _measurementService.GetSessionsByPatient(patientId);
-        if (sessions == null || sessions.Count() == 0)
+        var patientId = User.FindFirst("patient_id")?.Value;
+        if (string.IsNullOrEmpty(patientId))
         {
-            return NotFound($"No sessions found for patient with ID {patientId}.");
+            return Unauthorized(new { message = "Invalid or missing patient ID" });
         }
-        
+
+        var sessions = await _measurementService.GetSessionsByPatient(patientId);
+        if (sessions == null || !sessions.Any())
+        {
+            return NotFound($"No sessions found for patient.");
+        }
+
         return Ok(sessions);
     }
 
-    // [BearerTokenFilter]
-    [HttpPost("{patientId}/submit")]
-    public async Task<IActionResult> SubmitMeasurements([FromRoute] int patientId, [FromBody] MeasurementSubmissionDto dto)
+    [Authorize]
+    [HttpPost("submit")]
+    public async Task<IActionResult> SubmitMeasurements([FromBody] MeasurementSubmissionDto dto)
     {
         if (dto == null || dto.Values == null || !dto.Values.Any())
         {
             return BadRequest(new { message = "No measurement values provided." });
+        }
+
+        var patientId = User.FindFirst("patient_id")?.Value;
+        if (string.IsNullOrEmpty(patientId))
+        {
+            return Unauthorized(new { message = "Invalid or missing patient ID" });
         }
 
         try

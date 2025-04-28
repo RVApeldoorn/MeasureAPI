@@ -4,7 +4,7 @@ namespace MeasurementApi.Models
     {
         public int Id { get; set; }
 
-        public int PatientId { get; set; }
+        public string PatientId { get; set; } = string.Empty;
         public Patient? Patient { get; set; }
 
         public int CreatedByUserId { get; set; }

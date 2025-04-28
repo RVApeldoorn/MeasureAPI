@@ -4,7 +4,7 @@ namespace MeasurementApi.DTOs;
 public class CreateMeasurementSessionDto
 {
     public int CreatedByUserId { get; set; }
-    public int PatientId { get; set; }
+    public string PatientId { get; set; } = string.Empty;
     public DateTime DueDate { get; set; }
     public List<CreateMeasurementRequestDto> Requests { get; set; } = new();
 }
