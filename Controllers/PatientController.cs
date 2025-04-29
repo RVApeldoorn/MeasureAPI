@@ -27,10 +27,6 @@ public class PatientController : ControllerBase
         }
 
         var sessions = await _measurementService.GetSessionsByPatient(patientId);
-        if (sessions == null || !sessions.Any())
-        {
-            return NotFound($"No sessions found for patient.");
-        }
 
         return Ok(sessions);
     }

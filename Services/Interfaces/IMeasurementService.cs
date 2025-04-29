@@ -5,7 +5,7 @@ namespace MeasurementApi.Services.Interfaces;
 public interface IMeasurementService
 {
     Task<int> CreateMeasurementSession(CreateMeasurementSessionDto dto);
-    Task<IEnumerable<MeasurementSessionOverviewDto>> GetSessionsByPatient(string patientId);
+    Task<PatientSessionsOverviewDto> GetSessionsByPatient(string patientId);
 
     Task SubmitMeasurement(string PatientId, MeasurementSubmissionDto dto);
 
