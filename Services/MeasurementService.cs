@@ -36,37 +36,58 @@ public class MeasurementService : IMeasurementService
         return session.Id;
     }
 
-    public async Task<IEnumerable<MeasurementSessionOverviewDto>> GetSessionsByPatient(string patientId)
+    public async Task<PatientSessionsOverviewDto> GetSessionsByPatient(string patientId)
     {
-        return await _db.MeasurementSessions
+        var sessions = await _db.MeasurementSessions
             .Where(s => s.PatientId == patientId)
             .Include(s => s.MeasurementRequests)
                 .ThenInclude(r => r.MeasurementType)
             .Include(s => s.MeasurementRequests)
                 .ThenInclude(r => r.MeasurementValues)
-            .Select(s => new MeasurementSessionOverviewDto
+            .Include(s => s.Patient)
+            .ToListAsync();
+
+        string patientName = "";
+
+        if (sessions.Any())
+        {
+            patientName = sessions.First().Patient?.Name ?? "";
+        }
+        else
+        {
+            var patient = await _db.Patients.FindAsync(patientId);
+            patientName = patient?.Name ?? "";
+        }
+
+        var sessionDtos = sessions.Select(s => new MeasurementSessionOverviewDto
+        {
+            SessionId = s.Id,
+            DueDate = s.DueDate,
+            IsCompleted = s.IsCompleted,
+            Requests = s.MeasurementRequests.Select(r => new MeasurementRequestDto
             {
-                SessionId = s.Id,
-                DueDate = s.DueDate,
-                IsCompleted = s.IsCompleted,
-                Requests = s.MeasurementRequests.Select(r => new MeasurementRequestDto
+                RequestId = r.Id,
+                MeasurementType = new MeasurementTypeDto
                 {
-                    RequestId = r.Id,
-                    MeasurementType = new MeasurementTypeDto
-                    {
-                        Id = r.MeasurementType.Id,
-                        Name = r.MeasurementType.Name,
-                        Unit = r.MeasurementType.Unit
-                    },
-                    MeasurementValue = r.MeasurementValues.Select(v => new MeasurementValueDto
-                    {
-                        Id = v.Id,
-                        Value = v.Value,
-                        TakenAt = v.TakenAt,
-                        Note = v.Note
-                    }).ToList()
+                    Id = r.MeasurementType.Id,
+                    Name = r.MeasurementType.Name,
+                    Unit = r.MeasurementType.Unit
+                },
+                MeasurementValue = r.MeasurementValues.Select(v => new MeasurementValueDto
+                {
+                    Id = v.Id,
+                    Value = v.Value,
+                    TakenAt = v.TakenAt,
+                    Note = v.Note
                 }).ToList()
-            }).ToListAsync();
+            }).ToList()
+        }).ToList();
+
+        return new PatientSessionsOverviewDto
+        {
+            PatientName = patientName,
+            Sessions = sessionDtos
+        };
     }
 
     public async Task SubmitMeasurement(string PatientId, MeasurementSubmissionDto dto)
