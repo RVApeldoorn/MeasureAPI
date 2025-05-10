@@ -1,10 +1,93 @@
-# Get all patients
+# Health Measurement API - REST Client Documentation
+
+# Endpoint: POST /api/auth/setup
+# Description: Validates a patient setup code and issues a JWT token for authentication.
+# Request Body:
+#   - setupCode (string): A unique code provided to the patient.
+# Response:
+#   - 200 OK: Returns a JWT token.
+#     {
+#       "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+#     }
+#   - 401 Unauthorized: Invalid, expired or missing setup code.
+#     {
+#       "error": ""Invalid or expired setup code.""
+#     }
+# Notes:
+# - The setup code must exist in the database (see DbSeeder.cs for examples).
+# - The JWT token is required for patient endpoints (/api/patient/*).
+POST http://localhost:5005/api/auth/setup
+Content-Type: application/json
+
+{
+  "setupCode": "ABC123"
+}
+
+###
+
+# Endpoint: GET /api/user/allpatients
+# Description: Retrieves a list of all patients in the system.
+# Response:
+#   - 200 OK: Returns an array of patient objects.
+#    [
+#      {
+#        "id": "patient_1",
+#        "name": "Klaas Jan",
+#        "measurementSessions": []
+#      },
+#      {
+#        "id": "patient_2",
+#        "name": "Corrie de Boer",
+#        "measurementSessions": []
+#      }
+#    ]
+#   - 404 Not found: No patients in database.
+#     {
+#       "error": "No patients found."
+#     }
+# Notes:
+# - No authentication required (intended for testing).
+# - Patient data is sourced from the SQLite database.
 GET http://localhost:5005/api/user/allpatients
 Content-Type: application/json
 
 ###
 
-# Create a new measurement session
+# Endpoint: POST /api/user/createmeasurementsession
+# Description: Creates a new measurement session for a patient, including measurement requests.
+# Request Body:
+#   - CreatedByUserId (integer): ID of the user creating the session.
+#   - PatientId (string): ID of the patient (e.g., "patient_1").
+#   - dueDate (string): Due date for the session in YYYY-MM-DD format.
+#   - requests (array): List of measurement requests, each with a measurementTypeId.
+# Response:
+#   - 201 Created: Returns the created session.
+#    {
+#      "message": "Measurement session created.",
+#      "sessions": [
+#        {
+#          "sessionId": 1,
+#          "dueDate": "2025-06-01T00:00:00",
+#          "isCompleted": false,
+#          "requests": [
+#            {
+#              "requestId": 1,
+#              "measurementType": {
+#                "id": 1,
+#                "name": "Height",
+#                "unit": "cm"
+#              },
+#              "measurementValue": []
+#            }
+#          ]
+#        }
+#      ]
+#    }
+#   - 400 Bad Request: Invalid or missing fields.
+# Notes:
+# - No authentication required (intended for testing).
+# - measurementTypeId must match existing types in the database (e.g., 1 = Weight, 2 = Blood Pressure; see seed data).
+# - dueDate must be a valid date in the future.
 POST http://localhost:5005/api/user/createmeasurementsession
 Content-Type: application/json
 
@@ -15,23 +98,83 @@ Content-Type: application/json
   "requests": [
     {
       "measurementTypeId": 1
-    },
-    {
-      "measurementTypeId": 2
     }
   ]
 }
 
 ###
 
-# Fetch measurement sessions for a patient
+# Endpoint: GET /api/patient/sessions
+# Description: Fetches all measurement sessions for the authenticated patient.
+# Headers:
+#   - Authorization: Bearer <JWT_TOKEN> (obtained from /api/auth/setup)
+# Response:
+#   - 200 OK: Returns an array of sessions.
+#    {
+#      "patientName": "Klaas Jan",
+#      "sessions": [
+#        {
+#          "sessionId": 1,
+#          "dueDate": "2025-06-01T00:00:00",
+#          "isCompleted": false,
+#          "requests": [
+#            {
+#              "requestId": 1,
+#              "measurementType": {
+#                "id": 1,
+#                "name": "Height",
+#                "unit": "cm"
+#              },
+#              "measurementValue": []
+#            }
+#          ]
+#        }
+#      ]
+#    }
+#   - 401 Unauthorized: Missing or invalid JWT token.
+#     {
+#       "error": "Invalid or missing patient ID"
+#     }
+# Notes:
+# - Requires a valid JWT token from the /api/auth/setup endpoint.
+# - Only returns sessions for the authenticated patient (based on token).
+# - Response includes measurement type details (e.g., "Weight") if configured in the API.
 GET http://localhost:5005/api/patient/sessions
 Authorization: Bearer ...
 Content-Type: application/json
 
 ###
 
-# Submit measurements
+# Endpoint: POST /api/patient/submit
+# Description: Submits measurement values for a session’s measurement requests.
+# Headers:
+#   - Authorization: Bearer <JWT_TOKEN> (obtained from /api/auth/setup)
+# Request Body:
+#   - sessionId (integer): ID of the measurement session.
+#   - values (array): List of measurement submissions, each with:
+#     - measurementRequestId (integer): ID of the measurement request.
+#     - value (string): Measurement value (e.g., "40" for weight in kg).
+#     - note (string, optional): Additional notes for the measurement.
+# Response:
+#   - 200 OK: Submission successful.
+#     {
+#       "message": "Measurements submitted successfully"
+#     }
+#   - 400 Bad Request: Invalid or missing fields.
+#     {
+#       "error": "No measurement values provided."
+#     }
+#   - 401 Unauthorized: Missing or invalid JWT token.
+#     {
+#       "error": "Invalid or missing patient ID"
+#     }
+#   - 400 Bad Request: Error during submission.
+#     {
+#       "error": "Failed to submit measurements."
+#     }
+# Notes:
+# - Requires a valid JWT token from the /api/auth/setup endpoint.
+# - Value format can depend on measurement type.
 POST http://localhost:5005/api/patient/submit
 Authorization: Bearer ...
 Content-Type: application/json
@@ -42,24 +185,12 @@ Content-Type: application/json
     {
       "measurementRequestId": 1,
       "value": "123",
-      "note": "Bla bla bla"
-    },
-    {
-      "measurementRequestId": 2,
-      "value": "45",
-      "note": "Bla bla bla"
+      "note": "Measured at home"
     }
   ]
 }
 
 ###
 
-# Setup Patient (Get JWT Token)
-POST http://localhost:5005/api/auth/setup
-Content-Type: application/json
-
-{
-  "setupCode": "ABC123"
-}
-
-###
+# Notes for Testing:
+# - Replace ... with the token from the /api/auth/setup response.
