@@ -73,3 +73,18 @@ This Measurement API is a .NET 8.0 backend service that manages patient sessions
   ```bash
   dotnet test
   ```
+
+## Technology Stack
+The Measurement API uses the following technologies:
+
+### Backend
+- **.NET 8.0**: Core runtime and SDK for the API.
+- **ASP.NET Core**: Framework for building the RESTful API, handling requests and middleware.
+- **Entity Framework Core (9.0.4)**: ORM for database operations with SQLite (`measurements.db`).
+- **SQLite**: Lightweight database for storing patient data and sessions.
+- **JWT Authentication (Microsoft.AspNetCore.Authentication.JwtBearer 8.0.2)**: Secures endpoints with token-based authentication, configured in `appsettings.json`.
+
+### Testing and Development Tools
+- **xUnit (2.9.3), Moq (4.20.72), FluentAssertions (8.2.0)**: Unit testing frameworks and libraries, run with `dotnet test`.
+- **Microsoft.EntityFrameworkCore.Tools (9.0.4)**: CLI tools for database migrations (`dotnet ef`).
+- **REST Clients**: Postman or VS Code REST Client to test endpoints via `.rest` file.
