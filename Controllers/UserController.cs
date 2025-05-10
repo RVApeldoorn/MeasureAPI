@@ -37,8 +37,12 @@ namespace MeasurementApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            await _measurementService.CreateMeasurementSession(dto);
-
+            var session = await _measurementService.CreateMeasurementSession(dto);
+            if (session == -1)
+            {
+                return BadRequest("Failed to create measurement session. Please check the provided data.");
+            }
+            
             return Ok(new
             {
                 message = "Measurement session created.",

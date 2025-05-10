@@ -17,12 +17,34 @@ public class MeasurementService : IMeasurementService
 
     public async Task<int> CreateMeasurementSession(CreateMeasurementSessionDto dto)
     {
+        var patient = await _db.Patients
+            .FirstOrDefaultAsync(p => p.Id == dto.PatientId);
+        if (patient == null)
+            return -1;
+
+        if (dto.DueDate < DateTime.UtcNow)
+            return -1;
+
+        var user = await _db.Users
+            .FirstOrDefaultAsync(u => u.Id == dto.CreatedByUserId);
+        if (user == null)
+            return -1;
+
         var session = new MeasurementSession
         {
             CreatedByUserId = dto.CreatedByUserId,
             PatientId = dto.PatientId,
             DueDate = dto.DueDate,
         };
+
+        var measurementTypeIds = dto.Requests.Select(r => r.MeasurementTypeId).ToList();
+        var validMeasurementTypes = await _db.MeasurementTypes
+            .Where(mt => measurementTypeIds.Contains(mt.Id))
+            .Select(mt => mt.Id)
+            .ToListAsync();
+            
+        if (measurementTypeIds.Count != validMeasurementTypes.Count)
+            return -1;
 
         session.MeasurementRequests = dto.Requests.Select(requestDto => new MeasurementRequest
         {
@@ -38,6 +60,11 @@ public class MeasurementService : IMeasurementService
 
     public async Task<IEnumerable<MeasurementSessionOverviewDto>> GetSessionsByPatient(string patientId)
     {
+        var patient = await _db.Patients
+            .FirstOrDefaultAsync(p => p.Id == patientId);
+        if (patient == null)
+            return new List<MeasurementSessionOverviewDto>();
+
         return await _db.MeasurementSessions
             .Where(s => s.PatientId == patientId)
             .Include(s => s.MeasurementRequests)
@@ -73,13 +100,25 @@ public class MeasurementService : IMeasurementService
     {
         foreach (var valueDto in dto.Values)
         {
+            // validate if sessionId is connected to the patientId
+            var session = await _db.MeasurementSessions
+                .Include(s => s.Patient)
+                .FirstOrDefaultAsync(s => s.Id == dto.sessionId && s.PatientId == PatientId);
+            if (session == null)
+                continue;
+            
+            var MeasurementRequestId = valueDto.MeasurementRequestId;
+            var measurementRequest = await _db.MeasurementRequests
+                .Include(r => r.MeasurementSession)
+                .FirstOrDefaultAsync(r => r.Id == MeasurementRequestId);
+
+            if (measurementRequest == null)
+                continue;
+
             var existingValue = await _db.MeasurementValues
                 .FirstOrDefaultAsync(v => v.MeasurementRequestId == valueDto.MeasurementRequestId);
 
-            if (existingValue != null)
-            {
-                continue;
-            }
+            if (existingValue != null) continue;
 
             var value = new MeasurementValue
             {
