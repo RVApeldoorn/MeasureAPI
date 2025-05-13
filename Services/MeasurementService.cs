@@ -63,7 +63,11 @@ public class MeasurementService : IMeasurementService
         var patient = await _db.Patients
             .FirstOrDefaultAsync(p => p.Id == patientId);
         if (patient == null)
-            return new List<MeasurementSessionOverviewDto>();
+            return new PatientSessionsOverviewDto
+            {
+                PatientName = "",
+                Sessions = new List<MeasurementSessionOverviewDto>()
+            };
             
         var sessions = await _db.MeasurementSessions
             .Where(s => s.PatientId == patientId)
@@ -82,8 +86,8 @@ public class MeasurementService : IMeasurementService
         }
         else
         {
-            var patient = await _db.Patients.FindAsync(patientId);
-            patientName = patient?.Name ?? "";
+            var foundPatient = await _db.Patients.FindAsync(patientId);
+            patientName = foundPatient?.Name ?? "";
         }
 
         var sessionDtos = sessions.Select(s => new MeasurementSessionOverviewDto
