@@ -22,11 +22,11 @@ public class PatientController : ControllerBase
     {
         var patientId = User.FindFirst("patient_id")?.Value;
         if (string.IsNullOrEmpty(patientId))
-        {
             return Unauthorized(new { message = "Invalid or missing patient ID" });
-        }
 
         var sessions = await _measurementService.GetSessionsByPatient(patientId);
+        if (sessions == null || sessions.Sessions == null || !sessions.Sessions.Any())
+            return NotFound($"No sessions found for patient.");
 
         return Ok(sessions);
     }
@@ -42,13 +42,11 @@ public class PatientController : ControllerBase
 
         var patientId = User.FindFirst("patient_id")?.Value;
         if (string.IsNullOrEmpty(patientId))
-        {
             return Unauthorized(new { message = "Invalid or missing patient ID" });
-        }
 
         try
         {
-            await _measurementService.SubmitMeasurement(patientId, dto);
+            await _measurementService.SubmitMeasurement(patientId,dto);
             return Ok(new { message = "Measurements submitted successfully." });
         }
         catch (Exception ex)

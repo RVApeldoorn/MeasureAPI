@@ -26,9 +26,7 @@ public class AuthController : ControllerBase
             .FirstOrDefaultAsync(c => c.Code == request.SetupCode && !c.Used && c.ExpiresAt > DateTime.UtcNow);
 
         if (setupCode == null)
-        {
             return Unauthorized(new { message = "Invalid or expired setup code." });
-        }
 
         setupCode.Used = true;
         await _context.SaveChangesAsync();
