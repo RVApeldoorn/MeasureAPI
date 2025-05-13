@@ -25,8 +25,6 @@ public class PatientController : ControllerBase
             return Unauthorized(new { message = "Invalid or missing patient ID" });
 
         var sessions = await _measurementService.GetSessionsByPatient(patientId);
-        if (sessions == null || sessions.Sessions == null || !sessions.Sessions.Any())
-            return NotFound($"No sessions found for patient.");
 
         return Ok(sessions);
     }
