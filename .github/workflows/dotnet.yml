@@ -57,7 +57,7 @@ jobs:
 
     - name: Run tests with coverage
       run: >
-        dotnet test ./Tests/PatientControllerTests.cs
+        dotnet test MeasureAPI.csproj
         --no-build --configuration Release
         /p:CollectCoverage=true
         /p:CoverletOutput=./TestResults/coverage.cobertura.xml
