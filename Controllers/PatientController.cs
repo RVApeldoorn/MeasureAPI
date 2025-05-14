@@ -33,8 +33,10 @@ public class PatientController : ControllerBase
     [HttpPost("submit")]
     public async Task<IActionResult> SubmitMeasurements([FromBody] MeasurementSubmissionDto dto)
     {
-        if (dto == null || dto.Values == null || !dto.Values.Any())
-            return BadRequest(new { message = "No measurement values provided." });
+        if (dto == null || dto.Values == null || !dto.Values.Any() || dto.sessionId <= 0)
+        {
+            return BadRequest(new { message = "Invalid measurement submission data." });
+        }
 
         var patientId = User.FindFirst("patient_id")?.Value;
         if (string.IsNullOrEmpty(patientId))

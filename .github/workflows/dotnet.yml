@@ -1,4 +1,4 @@
-name: .NET Tests
+name: .NET Controller Tests
 
 on:
   push:
@@ -22,8 +22,67 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
 
-    - name: Build
-      run: dotnet build --no-restore
+    - name: Build solution
+      run: dotnet build --configuration Release --no-restore
 
-    - name: Run tests
-      run: dotnet test --no-build --verbosity normal
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-output
+        path: |
+          **/bin
+          **/obj
+
+  test-controllers:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Install ReportGenerator
+      run: dotnet tool install -g dotnet-reportgenerator-globaltool
+
+    - name: Download build output
+      uses: actions/download-artifact@v4
+      with:
+        name: build-output
+        path: ./
+
+    - name: Run tests with coverage
+      run: >
+        dotnet test MeasureAPI.csproj
+        --no-build --configuration Release
+        /p:CollectCoverage=true
+        /p:CoverletOutput=./TestResults/coverage.cobertura.xml
+        /p:CoverletOutputFormat="cobertura"
+
+    - name: Generate coverage report
+      run: |
+        ~/.dotnet/tools/reportgenerator \
+          -reports:"./TestResults/coverage.cobertura.xml" \
+          -targetdir:"coverage-report" \
+          -reporttypes:"HtmlInline_AzurePipelines;MarkdownSummary" \
+          -classfilters:"+MeasureAPI.Controllers.*;-*Model*;-*Migration*"
+
+    - name: Add coverage summary to PR
+      if: github.event_name == 'pull_request'
+      run: |
+        echo "## Coverage Summary" >> $GITHUB_STEP_SUMMARY
+        if [ -f coverage-report/Summary.md ]; then
+          cat coverage-report/Summary.md >> $GITHUB_STEP_SUMMARY
+        else
+          echo "_No coverage summary available (possibly no coverage generated)_" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: controller-coverage-report
+        path: coverage-report
