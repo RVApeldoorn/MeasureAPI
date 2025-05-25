@@ -146,7 +146,7 @@ Content-Type: application/json
 ###
 
 # Endpoint: POST /api/patient/submit
-# Description: Submits measurement values for a session’s measurement requests.
+# Description: Submits measurement values for a session's measurement requests.
 # Headers:
 #   - Authorization: Bearer <JWT_TOKEN> (obtained from /api/auth/setup)
 # Request Body:
