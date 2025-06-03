@@ -94,7 +94,7 @@ Content-Type: application/json
 {
   "CreatedByUserId": 1,
   "PatientId": "patient_1",
-  "dueDate": "2025-06-01",
+  "dueDate": "2026-01-01",
   "requests": [
     {
       "measurementTypeId": 1
