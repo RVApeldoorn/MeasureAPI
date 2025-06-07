@@ -181,7 +181,6 @@ public class PatientControllerTests
             }
         };
 
-        // Remove the patient ID from the claims
         _controller.ControllerContext.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
 
         var result = await _controller.SubmitMeasurements(dto);
@@ -228,67 +227,13 @@ public class PatientControllerTests
         result.Should().BeOfType<BadRequestObjectResult>();
     }
 
-    // [Fact]
-    // public async Task GetSessions_ReturnsOk_WhenSessionsExist()
-    // {
-    //     var sessions = new List<MeasurementSessionOverviewDto>
-    //     {
-    //         new MeasurementSessionOverviewDto
-    //         {
-    //             SessionId = 1,
-    //             DueDate = DateTime.Now.AddDays(1),
-    //             IsCompleted = false,
-    //             Requests = new List<MeasurementRequestDto>()
-    //         }
-    //     };
-
-    //     _serviceMock.Setup(s => s.GetSessionsByPatient(Patient1Id)).ReturnsAsync(sessions);
-
-    //     var result = await _controller.GetSessions();
-
-    //     result.Should().BeOfType<OkObjectResult>();
-    // }
-
-    // [Fact]
-    // public async Task GetSessions_ReturnsNotFound_WhenNoSessionsExist()
-    // {
-    //     _serviceMock.Setup(s => s.GetSessionsByPatient(Patient1Id)).ReturnsAsync(new List<MeasurementSessionOverviewDto>());
-
-    //     var result = await _controller.GetSessions();
-
-    //     result.Should().BeOfType<NotFoundObjectResult>();
-    // }
-
     [Fact]
     public async Task GetSessions_ReturnsUnauthorized_WhenPatientIdIsMissing()
     {
-        // Remove the patient ID from the claims
         _controller.ControllerContext.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
 
         var result = await _controller.GetSessions();
 
         result.Should().BeOfType<UnauthorizedObjectResult>();
     }
-
-
-    // [Fact]
-    // public async Task GetSessions_ReturnsOk_WhenSessionsContainNullValues()
-    // {
-    //     var sessions = new List<MeasurementSessionOverviewDto>
-    //     {
-    //         new MeasurementSessionOverviewDto
-    //         {
-    //             SessionId = 1,
-    //             DueDate = DateTime.Now.AddDays(1),
-    //             IsCompleted = false,
-    //             Requests = null
-    //         }
-    //     };
-
-    //     _serviceMock.Setup(s => s.GetSessionsByPatient(Patient1Id)).ReturnsAsync(sessions);
-
-    //     var result = await _controller.GetSessions();
-
-    //     result.Should().BeOfType<OkObjectResult>();
-    // }
 }

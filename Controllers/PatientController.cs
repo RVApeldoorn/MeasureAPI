@@ -44,7 +44,7 @@ public class PatientController : ControllerBase
 
         try
         {
-            await _measurementService.SubmitMeasurement(patientId,dto);
+            await _measurementService.SubmitMeasurement(patientId, dto);
             return Ok(new { message = "Measurements submitted successfully." });
         }
         catch (Exception ex)
