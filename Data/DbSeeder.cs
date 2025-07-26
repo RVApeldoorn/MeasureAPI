@@ -25,7 +25,7 @@ namespace MeasurementApi.Data
             if (!context.MeasurementTypes.Any())
             {
                 context.MeasurementTypes.AddRange(
-                    new MeasurementType { Id = 1, Name = "Height", Unit = "cm" },
+                    new MeasurementType { Id = 1, Name = "Height", Unit = "mm" },
                     new MeasurementType { Id = 2, Name = "Weight", Unit = "kg" },
                     new MeasurementType { Id = 3, Name = "Temperature", Unit = "°C" }
                 );
